@@ -219,18 +219,6 @@ class Tensor(torch._C._TensorBase):
         self.storage().share_memory_()
         return self
 
-    def view_as(self, tensor):
-        r"""view_as(other) -> Tensor
-
-        View this tensor as the same size as :attr:`other`.
-        ``self.view_as(other)`` is equivalent to ``self.view(other.size())``.
-
-        Args:
-            other (:class:`torch.Tensor`): The result tensor has the same size
-                as :attr:`other.size()`.
-        """
-        return self.view(tensor.size())
-
     def __reversed__(self):
         r"""Reverses the tensor along dimension 0."""
         if self.dim() == 0:
@@ -246,6 +234,10 @@ class Tensor(torch._C._TensorBase):
         r"""See :func:`torch.argmin`"""
         return torch.argmin(self, dim, keepdim)
 
+    def argsort(self, dim=None, descending=False):
+        r"""See :func: `torch.argsort`"""
+        return torch.argsort(self, dim, descending)
+
     def btrifact(self, info=None, pivot=True):
         r"""See :func:`torch.btrifact`
         """
@@ -254,11 +246,22 @@ class Tensor(torch._C._TensorBase):
                           "consider using btrifact_with_info instead", stacklevel=2)
             factorization, pivots, _info = super(Tensor, self).btrifact_with_info(pivot=pivot)
             if info.type() != _info.type():
-                raise ValueError('btrifact expects info to be an IntTenor')
+                raise ValueError('btrifact expects info to be an IntTensor')
             info.resize_as_(_info).copy_(_info)
             return factorization, pivots
         else:
             return super(Tensor, self).btrifact(pivot=pivot)
+
+    def stft(self, n_fft, hop_length=None, win_length=None, window=None,
+             center=True, pad_mode='reflect', normalized=False, onesided=True):
+        r"""See :func:`torch.stft`
+
+        .. warning::
+          This function changed signature at version 0.4.1. Calling with
+          the previous signature may cause error or return incorrect result.
+        """
+        return torch.stft(self, n_fft, hop_length, win_length, window, center,
+                          pad_mode, normalized, onesided)
 
     def resize(self, *sizes):
         warnings.warn("non-inplace resize is deprecated")
@@ -293,14 +296,6 @@ class Tensor(torch._C._TensorBase):
     def scatter_add(self, dim, index, source):
         return self.clone().scatter_add_(dim, index, source)
 
-    def masked_copy(self, mask, tensor):
-        warnings.warn("masked_copy is deprecated and renamed to masked_scatter, and will be removed in v0.3")
-        return self.masked_scatter(mask, tensor)
-
-    def masked_copy_(self, mask, tensor):
-        warnings.warn("masked_copy_ is deprecated and renamed to masked_scatter_, and will be removed in v0.3")
-        return self.masked_scatter_(mask, tensor)
-
     def masked_scatter(self, mask, tensor):
         return self.clone().masked_scatter_(mask, tensor)
 
@@ -320,7 +315,7 @@ class Tensor(torch._C._TensorBase):
             return output
 
     def __rsub__(self, other):
-        return -self + other
+        return torch.sub(other, self)
 
     def __rdiv__(self, other):
         if self.dtype.is_floating_point:
@@ -393,6 +388,8 @@ class Tensor(torch._C._TensorBase):
         return sorted(keys)
 
     # Numpy array interface, to support `numpy.asarray(tensor) -> ndarray`
+    __array_priority__ = 1000    # prefer Tensor ops over numpy ones
+
     def __array__(self, dtype=None):
         if dtype is None:
             return self.cpu().numpy()

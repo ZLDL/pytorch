@@ -2,6 +2,55 @@
 
 namespace at { namespace native {
 
+Tensor& _clamp__cuda(Tensor& self, Scalar min, Scalar max) {
+  if (!std::isnan(min.toDouble()) && !std::isnan(max.toDouble())) {
+    return _th_clamp_(self, min, max);
+  } else if (std::isnan(min.toDouble())) {
+    return _th_clamp_max_(self, max);
+  } else if (std::isnan(max.toDouble())) {
+    return _th_clamp_min_(self, min);
+  } else {
+    return self;
+  }
+}
+
+Tensor& _clamp_out_cuda(
+    Tensor& result,
+    const Tensor& self,
+    Scalar min,
+    Scalar max) {
+  result.resize_(self.sizes());
+  result.copy_(self);
+  if (!std::isnan(min.toDouble()) && !std::isnan(max.toDouble())) {
+    _th_clamp_(result, min, max);
+  } else if (std::isnan(min.toDouble())) {
+    _th_clamp_max_(result, max);
+  } else if (std::isnan(max.toDouble())) {
+    _th_clamp_min_(result, min);
+  }
+  return result;
+}
+
+Tensor& _clamp_max__cuda(Tensor& self, Scalar max) {
+  return _th_clamp_max_(self, max);
+}
+
+Tensor& _clamp_max_out_cuda(Tensor& result, const Tensor& self, Scalar max) {
+  result.resize_(self.sizes());
+  result.copy_(self);
+  return _th_clamp_max_(result, max);
+}
+
+Tensor& _clamp_min__cuda(Tensor& self, Scalar min) {
+  return _th_clamp_min_(self, min);
+}
+
+Tensor& _clamp_min_out_cuda(Tensor& result, const Tensor& self, Scalar min) {
+  result.resize_(self.sizes());
+  result.copy_(self);
+  return _th_clamp_min_(result, min);
+}
+
 // These are just forwarding stubs
 
 #define IMPLEMENT_UNARY_OP_PREQUEL(op)                           \

@@ -5,8 +5,8 @@
 #include <torch/tensor_list_view.h>
 #include <torch/utils.h>
 
-#include <ATen/Error.h>
-#include <ATen/optional.h>
+#include <ATen/core/Error.h>
+#include <ATen/core/optional.h>
 
 #include <array>
 #include <cmath>
@@ -128,7 +128,7 @@ bool RNNImplBase<Derived>::use_cudnn(Tensor sample) const {
 template <typename Derived>
 Tensor RNNImplBase<Derived>::create_dropout_state(Tensor input) const {
   static const int64_t dropout_seed =
-      torch::ones({}, torch::kInt64).random_().toCLong();
+      torch::empty({}, torch::kInt64).random_().toCLong();
   if (options.dropout_ > 0) {
     torch::DeviceGuard guard(input.device());
     return torch::_cudnn_init_dropout_state(

@@ -97,7 +97,11 @@ if [[ $(uname) == 'Darwin' ]]; then
     LDFLAGS="$LDFLAGS -Wl,-rpath,@loader_path"
     LD_POSTFIX=".dylib"
 else
-    LDFLAGS="$LDFLAGS -Wl,-rpath,\$ORIGIN"
+    if [[ $USE_ROCM -eq 1 ]]; then
+        LDFLAGS="$LDFLAGS -Wl,-rpath,\\\\\\\$ORIGIN"
+    else
+        LDFLAGS="$LDFLAGS -Wl,-rpath,\$ORIGIN"
+    fi
 fi
 CPP_FLAGS=" -std=c++11 "
 GLOO_FLAGS=""
@@ -255,6 +259,7 @@ function build_caffe2() {
       -DBUILDING_WITH_TORCH_LIBS=ON \
       -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
       -DBUILD_CAFFE2=$FULL_CAFFE2 \
+      -DBUILD_TORCH=$BUILD_TORCH \
       -DBUILD_ATEN=ON \
       -DBUILD_PYTHON=$FULL_CAFFE2 \
       -DBUILD_BINARY=OFF \
