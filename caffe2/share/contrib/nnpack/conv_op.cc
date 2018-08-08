@@ -421,4 +421,6 @@ bool NNPACKConvOp::RunOnDeviceWithOrderNCHW() {
 
 REGISTER_CPU_OPERATOR_WITH_ENGINE(Conv, NNPACK, NNPACKConvOp);
 
+OPERATOR_SCHEMA_WITH_ENGINE(Conv, NNPACK).NumInputs(2,3).NumOutputs(1);
+
 } // namespace caffe2

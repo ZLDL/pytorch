@@ -875,6 +875,16 @@ def TranslateReduction(layer, pretrained_blobs, is_test, **kwargs):
 
     return caffe_op, []
 
+# def optimize_net(net):
+#     optimization = memonger.optimize_interference(net,
+#         [b for b in net.external_input] + [b for b in net.external_output],
+#         ordering_function=memonger.topological_sort_traversal)
+#     return optimization.net
+
+def optimize_net(net):
+    optimization = memonger.optimize_inference_fast(net,
+        [b for b in net.external_input] + [b for b in net.external_output])
+    return optimization
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
@@ -920,6 +930,8 @@ if __name__ == '__main__':
     net.external_input.extend([param.name for param in pretrained_params.protos])
     net.external_output.extend([external_output])
     init_net = ConvertTensorProtosToInitNet(pretrained_params, external_input)
+
+    net = optimize_net(net)
 
     with open(output_predict_net, 'wb') as f:
         f.write(net.SerializeToString())

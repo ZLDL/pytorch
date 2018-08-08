@@ -537,4 +537,6 @@ OpSchema::Cost PointwiseCostInference(
 
 #endif // CAFFE2_NO_OPERATOR_SCHEMA
 
+#define OPERATOR_SCHEMA_WITH_ENGINE(name, engine) OPERATOR_SCHEMA(name##_ENGINE_##engine)
+
 #endif // CAFFE2_CORE_OPERATOR_SCHEMA_H_
